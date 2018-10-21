@@ -26,6 +26,9 @@
 namespace hdl_localization {
 
 class HdlLocalizationNodelet : public nodelet::Nodelet {
+
+  std::string sensor_frame_id_;
+
 public:
   using PointT = pcl::PointXYZI;
 
@@ -98,6 +101,8 @@ private:
         private_nh.param<double>("cool_time_duration", 0.5)
       ));
     }
+
+    sensor_frame_id_ = private_nh.param<std::string>("sensor_frame_id", "velodyne");
   }
 
 private:
@@ -230,7 +235,8 @@ private:
    */
   void publish_odometry(const ros::Time& stamp, const Eigen::Matrix4f& pose) {
     // broadcast the transform over tf
-    geometry_msgs::TransformStamped odom_trans = matrix2transform(stamp, pose, "map", "velodyne");
+    // geometry_msgs::TransformStamped odom_trans = matrix2transform(stamp, pose, "map", "velodyne");
+    geometry_msgs::TransformStamped odom_trans = matrix2transform(stamp, pose, "map", sensor_frame_id_.c_str());
     pose_broadcaster.sendTransform(odom_trans);
 
     // publish the transform
@@ -243,7 +249,8 @@ private:
     odom.pose.pose.position.z = pose(2, 3);
     odom.pose.pose.orientation = odom_trans.transform.rotation;
 
-    odom.child_frame_id = "velodyne";
+    // odom.child_frame_id = "velodyne";
+    odom.child_frame_id = sensor_frame_id_.c_str();
     odom.twist.twist.linear.x = 0.0;
     odom.twist.twist.linear.y = 0.0;
     odom.twist.twist.angular.z = 0.0;
