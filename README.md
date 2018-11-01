@@ -4,8 +4,13 @@ Original repo: <https://github.com/koide3/hdl_localization>
 
 Following parameter is added:  
 **~sensor_frame_id**  (string, default: "velodyne")  
-    If you use Robosense RS-LiDAR-16(<https://github.com/RoboSense-LiDAR/ros_rslidar>), set this parameter to "rslidar"   
+  If you use Robosense RS-LiDAR-16(<https://github.com/RoboSense-LiDAR/ros_rslidar>), set this parameter to "rslidar"   
 
+Provided tf Transform:  
+  map → < sensor_frame_id >_ndt
+
+If odom → < sensor_frame_id > tf is available, the following tf transform will be provided:  
+  map → odom
 
 Original readme is as follows:  
 
@@ -47,7 +52,7 @@ rviz -d hdl_localizatrion.rviz
 rosbag play --clock hdl_400.bag
 ```
 
-<img src="data/figs/localization1.png" height="256pix" /> <img src="data/figs/localization2.png" height="256pix" /> 
+<img src="data/figs/localization1.png" height="256pix" /> <img src="data/figs/localization2.png" height="256pix" />
 
 If it doesn't work well, change *ndt_neighbor_search_method* in *hdl_localization.launch* to "DIRECT1". It makes the scan matching significantly fast, but a little bit unstable.
 
@@ -65,4 +70,3 @@ Kenji Koide, Jun Miura, and Emanuele Menegatti, A Portable 3D LIDAR-based System
 ## Contact
 Kenji Koide, Active Intelligent Systems Laboratory, Toyohashi University of Technology <a href="http://www.aisl.cs.tut.ac.jp">[URL]</a> <br>
 koide@aisl.cs.tut.ac.jp
-
