@@ -28,7 +28,7 @@ namespace hdl_localization {
 
 class HdlLocalizationNodelet : public nodelet::Nodelet {
 
-  std::string sensor_frame_id_;
+  std::string map_frame_id_, odom_frame_id_, sensor_frame_id_;
   tf::TransformListener listener;
 
 public:
@@ -103,7 +103,9 @@ private:
         private_nh.param<double>("cool_time_duration", 0.5)
       ));
     }
-
+    
+    map_frame_id_ = private_nh.param<std::string>("map_frame_id", "map");
+    odom_frame_id_ = private_nh.param<std::string>("odom_frame_id", "odom");
     sensor_frame_id_ = private_nh.param<std::string>("sensor_frame_id", "velodyne");
   }
 
@@ -172,7 +174,7 @@ private:
     // NODELET_INFO_STREAM("processing_time: " << avg_processing_time * 1000.0 << "[msec]");
 
     if(aligned_pub.getNumSubscribers()) {
-      aligned->header.frame_id = "map";
+      aligned->header.frame_id = map_frame_id_.c_str();
       aligned->header.stamp = cloud->header.stamp;
       aligned_pub.publish(aligned);
     }
@@ -238,12 +240,12 @@ private:
   void publish_odometry(const ros::Time& stamp, const Eigen::Matrix4f& pose) {
     // broadcast the transform over tf
     // geometry_msgs::TransformStamped odom_trans = matrix2transform(stamp, pose, "map", "velodyne");
-    geometry_msgs::TransformStamped odom_trans = matrix2transform(stamp, pose, "map", (sensor_frame_id_ + "_ndt").c_str());
+    geometry_msgs::TransformStamped odom_trans = matrix2transform(stamp, pose, map_frame_id_.c_str(), (sensor_frame_id_ + "_ndt").c_str());
     pose_broadcaster.sendTransform(odom_trans);
 
     tf::StampedTransform transform;
     try{
-      listener.lookupTransform("odom", sensor_frame_id_.c_str(), ros::Time(0), transform);
+      listener.lookupTransform(odom_frame_id_.c_str(), sensor_frame_id_.c_str(), ros::Time(0), transform);
 
       tf::Vector3 trans = transform.getOrigin();
       tf::Quaternion rot = transform.getRotation();
@@ -266,7 +268,7 @@ private:
 
       Eigen::Matrix4f map2odom = pose * odom2sensor.inverse();
 
-      geometry_msgs::TransformStamped map2odom_trans = matrix2transform(stamp, map2odom, "map", "odom");
+      geometry_msgs::TransformStamped map2odom_trans = matrix2transform(stamp, map2odom, map_frame_id_.c_str(), odom_frame_id_.c_str());
       map2odom_broadcaster.sendTransform(map2odom_trans);
     }
     catch (tf::TransformException ex){
@@ -276,7 +278,7 @@ private:
     // publish the transform
     nav_msgs::Odometry odom;
     odom.header.stamp = stamp;
-    odom.header.frame_id = "map";
+    odom.header.frame_id = map_frame_id_.c_str();
 
     odom.pose.pose.position.x = pose(0, 3);
     odom.pose.pose.position.y = pose(1, 3);

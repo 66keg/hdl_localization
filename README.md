@@ -3,6 +3,10 @@
 Original repo: <https://github.com/koide3/hdl_localization>  
 
 Following parameter is added:  
+**~map_frame_id**  (string, default: "map")  
+
+**~odom_frame_id**  (string, default: "odom")  
+
 **~sensor_frame_id**  (string, default: "velodyne")  
   If you use Robosense RS-LiDAR-16(<https://github.com/RoboSense-LiDAR/ros_rslidar>), set this parameter to "rslidar"   
 
